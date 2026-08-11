@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useProgram } from "./use-program";
 import { accountsOf } from "@/lib/solana/accounts";
 import { findMarketAuthorityPda } from "@/lib/solana/pda";
@@ -11,16 +11,33 @@ import type { MarketAuthorityAccount } from "@/lib/solana/types";
 export function useMarketAuthority() {
   const program = useProgram();
   const [authority, setAuthority] = useState<MarketAuthorityAccount | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [pda] = findMarketAuthorityPda();
+      const raw = await accountsOf(program).marketAuthority.fetch(pda);
+      setAuthority(mapMarketAuthority(pda, raw));
+    } catch {
+      setAuthority(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [program]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setLoading(true);
       try {
         const [pda] = findMarketAuthorityPda();
         const raw = await accountsOf(program).marketAuthority.fetch(pda);
         if (!cancelled) setAuthority(mapMarketAuthority(pda, raw));
       } catch {
         if (!cancelled) setAuthority(null);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -28,5 +45,5 @@ export function useMarketAuthority() {
     };
   }, [program]);
 
-  return authority;
+  return { authority, loading, refresh };
 }

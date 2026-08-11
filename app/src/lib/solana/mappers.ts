@@ -9,6 +9,11 @@ export function parseCategory(raw: Record<string, unknown>): CategoryName {
   return match ?? "Crypto";
 }
 
+/** Inverse of parseCategory — Anchor's Borsh coder expects the variant name lowercased. */
+export function toCategoryArg(category: CategoryName): Record<string, Record<string, never>> {
+  return { [category.toLowerCase()]: {} };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapMarket(publicKey: PublicKey, raw: any): MarketAccount {
   return {

@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Target } from "lucide-react";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ConnectWalletButton } from "@/components/wallet/connect-wallet-button";
+import { useMarketAuthority } from "@/hooks/use-market-authority";
 import { getCluster, getClusterLabel } from "@/lib/solana/cluster";
 
 const NAV_LINKS = [
@@ -16,6 +18,14 @@ const NAV_LINKS = [
 export function SiteHeader() {
   const pathname = usePathname();
   const cluster = getCluster();
+  const { publicKey, connected } = useWallet();
+  const { authority, loading } = useMarketAuthority();
+
+  const isAdmin = connected && (!loading && authority === null
+    ? true
+    : !!(publicKey && authority && publicKey.equals(authority.admin)));
+
+  const navLinks = isAdmin ? [...NAV_LINKS, { href: "/admin", label: "Admin" }] : NAV_LINKS;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md">
@@ -30,7 +40,7 @@ export function SiteHeader() {
             </span>
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
-            {NAV_LINKS.map((link) => {
+            {navLinks.map((link) => {
               const active = pathname === link.href;
               return (
                 <Link
@@ -63,7 +73,7 @@ export function SiteHeader() {
       </div>
 
       <nav className="flex items-center gap-1 border-t border-border/60 px-4 py-2 sm:hidden">
-        {NAV_LINKS.map((link) => {
+        {navLinks.map((link) => {
           const active = pathname === link.href;
           return (
             <Link

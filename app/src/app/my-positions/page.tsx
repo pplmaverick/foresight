@@ -22,7 +22,7 @@ export default function MyPositionsPage() {
   const { connected } = useWallet();
   const { positions, loading: positionsLoading, refresh: refreshPositions } = usePositions();
   const { markets, loading: marketsLoading } = useMarkets();
-  const authority = useMarketAuthority();
+  const { authority } = useMarketAuthority();
 
   const marketsByAddress = useMemo(() => {
     const map = new Map<string, MarketAccount>();
