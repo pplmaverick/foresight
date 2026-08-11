@@ -39,6 +39,7 @@ export function mapPosition(publicKey: PublicKey, raw: any): PositionAccount {
     publicKey,
     market: raw.market,
     user: raw.user,
+    positionIndex: raw.positionIndex,
     optionIndex: raw.optionIndex,
     amount: raw.amount,
     claimed: raw.claimed,

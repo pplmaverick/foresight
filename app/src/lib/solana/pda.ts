@@ -16,9 +16,14 @@ export function findMarketPda(marketId: BN | number | string): [PublicKey, numbe
   );
 }
 
-export function findPositionPda(market: PublicKey, user: PublicKey): [PublicKey, number] {
+export function findPositionPda(
+  market: PublicKey,
+  user: PublicKey,
+  positionIndex: BN | number
+): [PublicKey, number] {
+  const bn = BN.isBN(positionIndex) ? positionIndex : new BN(positionIndex);
   return PublicKey.findProgramAddressSync(
-    [seed(SEEDS.position), market.toBuffer(), user.toBuffer()],
+    [seed(SEEDS.position), market.toBuffer(), user.toBuffer(), bn.toArrayLike(Buffer, "le", 8)],
     PROGRAM_ID
   );
 }

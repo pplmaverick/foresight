@@ -22,6 +22,7 @@ export interface PositionAccount {
   publicKey: PublicKey;
   market: PublicKey;
   user: PublicKey;
+  positionIndex: BN;
   optionIndex: number;
   amount: BN;
   claimed: boolean;

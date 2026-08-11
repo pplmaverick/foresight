@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useProgram } from "./use-program";
 import { accountsOf } from "@/lib/solana/accounts";
+import { POSITION_ACCOUNT_SIZE } from "@/lib/solana/constants";
 import { mapPosition } from "@/lib/solana/mappers";
 import type { PositionAccount } from "@/lib/solana/types";
 
@@ -27,6 +28,7 @@ export function usePositions() {
     setError(null);
     try {
       const accounts = await accountsOf(program).position.all([
+        { dataSize: POSITION_ACCOUNT_SIZE },
         { memcmp: { offset: USER_FIELD_OFFSET, bytes: publicKey.toBase58() } },
       ]);
       setPositions(

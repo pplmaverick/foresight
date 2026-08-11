@@ -41,15 +41,20 @@ pub mod solana_prediction_market {
         )
     }
 
-    pub fn place_bet(ctx: Context<PlaceBet>, option_index: u8, amount: u64) -> Result<()> {
-        crate::instructions::place_bet::handle_place_bet(ctx, option_index, amount)
+    pub fn place_bet(
+        ctx: Context<PlaceBet>,
+        option_index: u8,
+        amount: u64,
+        position_index: u64,
+    ) -> Result<()> {
+        crate::instructions::place_bet::handle_place_bet(ctx, option_index, amount, position_index)
     }
 
     pub fn resolve_market(ctx: Context<ResolveMarket>, winning_option: u8) -> Result<()> {
         crate::instructions::resolve_market::handle_resolve_market(ctx, winning_option)
     }
 
-    pub fn claim_reward(ctx: Context<ClaimReward>) -> Result<()> {
-        crate::instructions::claim_reward::handle_claim_reward(ctx)
+    pub fn claim_reward(ctx: Context<ClaimReward>, position_index: u64) -> Result<()> {
+        crate::instructions::claim_reward::handle_claim_reward(ctx, position_index)
     }
 }

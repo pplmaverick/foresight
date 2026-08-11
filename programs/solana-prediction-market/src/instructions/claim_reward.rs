@@ -7,6 +7,7 @@ use crate::{
 };
 
 #[derive(Accounts)]
+#[instruction(position_index: u64)]
 pub struct ClaimReward<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
@@ -19,7 +20,12 @@ pub struct ClaimReward<'info> {
     pub market: Account<'info, Market>,
     #[account(
         mut,
-        seeds = [POSITION_SEED, market.key().as_ref(), user.key().as_ref()],
+        seeds = [
+            POSITION_SEED,
+            market.key().as_ref(),
+            user.key().as_ref(),
+            position_index.to_le_bytes().as_ref(),
+        ],
         bump = position.bump,
         has_one = user,
     )]
@@ -36,7 +42,7 @@ pub struct ClaimReward<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handle_claim_reward(ctx: Context<ClaimReward>) -> Result<()> {
+pub fn handle_claim_reward(ctx: Context<ClaimReward>, _position_index: u64) -> Result<()> {
     let market = &ctx.accounts.market;
     let position = &ctx.accounts.position;
     let fee_rate = ctx.accounts.market_authority.fee_rate;

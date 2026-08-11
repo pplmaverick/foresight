@@ -57,7 +57,7 @@ export function PositionCard({
       const [vault] = findVaultPda(market.publicKey);
 
       await methodsOf(program)
-        .claimReward()
+        .claimReward(position.positionIndex)
         .accounts({
           user: publicKey,
           marketAuthority,

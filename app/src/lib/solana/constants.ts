@@ -24,3 +24,11 @@ export const SEEDS = {
   position: POSITION_SEED,
   vault: VAULT_SEED,
 } as const;
+
+/**
+ * Byte length of a Position account: 8 (discriminator) + 32 (market) + 32 (user)
+ * + 8 (position_index) + 1 (option_index) + 8 (amount) + 1 (claimed) + 1 (bump).
+ * Used to filter out stale pre-migration Position accounts (which predate the
+ * position_index field) so they don't crash decoding in getProgramAccounts queries.
+ */
+export const POSITION_ACCOUNT_SIZE = 91;

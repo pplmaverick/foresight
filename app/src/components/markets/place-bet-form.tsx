@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label";
 import { ConnectWalletButton } from "@/components/wallet/connect-wallet-button";
 import { useProgram } from "@/hooks/use-program";
 import { useWalletBalance } from "@/hooks/use-wallet-balance";
-import { methodsOf } from "@/lib/solana/accounts";
+import { accountsOf, methodsOf } from "@/lib/solana/accounts";
+import { POSITION_ACCOUNT_SIZE } from "@/lib/solana/constants";
 import { findPositionPda, findVaultPda } from "@/lib/solana/pda";
 import { formatPct, solToLamports } from "@/lib/solana/format";
 import { OPTION_COLORS } from "@/lib/market-ui";
@@ -19,6 +20,10 @@ import { cn } from "@/lib/utils";
 import type { MarketAccount } from "@/lib/solana/types";
 
 const QUICK_AMOUNTS_SOL = [0.1, 0.5, 1];
+
+// Position layout: 8 (discriminator) + 32 (market) = offset of `user` field.
+const MARKET_FIELD_OFFSET = 8;
+const USER_FIELD_OFFSET = 8 + 32;
 
 export function PlaceBetForm({
   market,
@@ -55,12 +60,18 @@ export function PlaceBetForm({
     if (selected === null || !publicKey) return;
     setSubmitting(true);
     try {
-      const [position] = findPositionPda(market.publicKey, publicKey);
+      const existingPositions = await accountsOf(program).position.all([
+        { dataSize: POSITION_ACCOUNT_SIZE },
+        { memcmp: { offset: MARKET_FIELD_OFFSET, bytes: market.publicKey.toBase58() } },
+        { memcmp: { offset: USER_FIELD_OFFSET, bytes: publicKey.toBase58() } },
+      ]);
+      const positionIndex = new BN(existingPositions.length);
+      const [position] = findPositionPda(market.publicKey, publicKey, positionIndex);
       const [vault] = findVaultPda(market.publicKey);
       const lamports = new BN(solToLamports(amountValue));
 
       await methodsOf(program)
-        .placeBet(selected, lamports)
+        .placeBet(selected, lamports, positionIndex)
         .accounts({
           user: publicKey,
           market: market.publicKey,

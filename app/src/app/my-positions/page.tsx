@@ -20,7 +20,12 @@ const STATUS_RANK = { claimable: 0, pending: 1, claimed: 2, lost: 3 } as const;
 
 export default function MyPositionsPage() {
   const { connected } = useWallet();
-  const { positions, loading: positionsLoading, refresh: refreshPositions } = usePositions();
+  const {
+    positions,
+    loading: positionsLoading,
+    error: positionsError,
+    refresh: refreshPositions,
+  } = usePositions();
   const { markets, loading: marketsLoading } = useMarkets();
   const { authority } = useMarketAuthority();
 
@@ -97,6 +102,12 @@ export default function MyPositionsPage() {
             <Skeleton key={i} className="h-20 w-full" />
           ))}
         </div>
+      ) : positionsError ? (
+        <EmptyState
+          icon={Wallet}
+          title="Couldn't load positions"
+          description={positionsError}
+        />
       ) : sortedPositions.length === 0 ? (
         <EmptyState
           icon={Wallet}

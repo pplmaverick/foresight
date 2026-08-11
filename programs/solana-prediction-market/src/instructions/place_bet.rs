@@ -7,6 +7,7 @@ use crate::{
 };
 
 #[derive(Accounts)]
+#[instruction(option_index: u8, amount: u64, position_index: u64)]
 pub struct PlaceBet<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
@@ -20,7 +21,12 @@ pub struct PlaceBet<'info> {
         init,
         payer = user,
         space = 8 + Position::INIT_SPACE,
-        seeds = [POSITION_SEED, market.key().as_ref(), user.key().as_ref()],
+        seeds = [
+            POSITION_SEED,
+            market.key().as_ref(),
+            user.key().as_ref(),
+            position_index.to_le_bytes().as_ref(),
+        ],
         bump
     )]
     pub position: Account<'info, Position>,
@@ -33,7 +39,12 @@ pub struct PlaceBet<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handle_place_bet(ctx: Context<PlaceBet>, option_index: u8, amount: u64) -> Result<()> {
+pub fn handle_place_bet(
+    ctx: Context<PlaceBet>,
+    option_index: u8,
+    amount: u64,
+    position_index: u64,
+) -> Result<()> {
     let market = &ctx.accounts.market;
 
     require!(!market.resolved, ErrorCode::MarketAlreadyResolved);
@@ -68,6 +79,7 @@ pub fn handle_place_bet(ctx: Context<PlaceBet>, option_index: u8, amount: u64) -
     let position = &mut ctx.accounts.position;
     position.market = market_key;
     position.user = ctx.accounts.user.key();
+    position.position_index = position_index;
     position.option_index = option_index;
     position.amount = amount;
     position.claimed = false;

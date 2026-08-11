@@ -21,6 +21,7 @@ const VAULT_SEED: &[u8] = b"vault";
 const MARKET_ID: u64 = 1;
 const FEE_RATE_BPS: u16 = 500; // 5%
 const BET_AMOUNT: u64 = 1_000_000_000; // 1 SOL
+const POSITION_INDEX: u64 = 0;
 
 fn send_ix(svm: &mut LiteSVM, ix: Instruction, signer: &Keypair) {
     let blockhash = svm.latest_blockhash();
@@ -48,7 +49,12 @@ fn test_prediction_market_flow() {
     )
     .0;
     let position = Pubkey::find_program_address(
-        &[POSITION_SEED, market.as_ref(), user.pubkey().as_ref()],
+        &[
+            POSITION_SEED,
+            market.as_ref(),
+            user.pubkey().as_ref(),
+            POSITION_INDEX.to_le_bytes().as_ref(),
+        ],
         &program_id,
     )
     .0;
@@ -132,6 +138,7 @@ fn test_prediction_market_flow() {
         &solana_prediction_market::instruction::PlaceBet {
             option_index: 0,
             amount: BET_AMOUNT,
+            position_index: POSITION_INDEX,
         }
         .data(),
         solana_prediction_market::accounts::PlaceBet {
@@ -188,7 +195,10 @@ fn test_prediction_market_flow() {
 
     let ix = Instruction::new_with_bytes(
         program_id,
-        &solana_prediction_market::instruction::ClaimReward {}.data(),
+        &solana_prediction_market::instruction::ClaimReward {
+            position_index: POSITION_INDEX,
+        }
+        .data(),
         solana_prediction_market::accounts::ClaimReward {
             user: user.pubkey(),
             market_authority,

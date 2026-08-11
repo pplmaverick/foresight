@@ -43,6 +43,7 @@ pub struct Market {
 pub struct Position {
     pub market: Pubkey,
     pub user: Pubkey,
+    pub position_index: u64,
     pub option_index: u8,
     pub amount: u64,
     pub claimed: bool,
