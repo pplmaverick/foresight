@@ -17,19 +17,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # rustup respects rust-toolchain.toml automatically; this just forces
-      # resolution/installation up front instead of on the first cargo call.
-      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        run: rustup show
-
-      - name: Cache cargo registry and build output
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-
-      # Solana CLI and Anchor CLI (via avm) are cached separately from the Rust
-      # cache above since they're standalone binaries, not workspace build output.
-      # Bump the key suffix (e.g. -v2) to force a refresh of the "stable" Solana build.
+      # Cached separately from the cargo registry/build cache below since these
+      # are standalone binaries, not workspace build output. Bump the key
+      # suffix (e.g. -v2) to force a refresh of the "stable" Solana build.
       - name: Cache Solana CLI and Anchor CLI
         id: tool-cache
         uses: actions/cache@v4
@@ -41,22 +31,46 @@ jobs:
             ~/.cargo/bin/anchor
           key: ${{ runner.os }}-solana-${{ env.SOLANA_VERSION }}-anchor-${{ env.ANCHOR_VERSION }}-v1
 
+      # avm/anchor-cli need a newer rustc than the 1.89 pinned in
+      # rust-toolchain.toml (cargo-platform 0.3.3 requires rustc 1.91+), so
+      # make sure the system's default stable toolchain is current before
+      # building them.
+      - name: Install Rust stable (latest, for avm compilation)
+        if: steps.tool-cache.outputs.cache-hit != 'true'
+        run: |
+          rustup update stable
+          rustup default stable
+
       - name: Install system dependencies for avm/anchor-cli build
         if: steps.tool-cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y pkg-config build-essential libudev-dev libssl-dev
 
-      - name: Install Solana CLI (Agave)
+      # rustup picks up rust-toolchain.toml from the working directory, not
+      # from whether `rustup show` has run — building from inside the repo
+      # would silently re-pin to 1.89 and hit the same rustc-version failure
+      # no matter where this step sits in the job. Building outside the repo
+      # keeps it on the stable toolchain installed above.
+      - name: Install avm + Anchor CLI ${{ env.ANCHOR_VERSION }}
         if: steps.tool-cache.outputs.cache-hit != 'true'
-        run: sh -c "$(curl -sSfL https://release.anza.xyz/${{ env.SOLANA_VERSION }}/install)"
-
-      - name: Install Anchor CLI via avm
-        if: steps.tool-cache.outputs.cache-hit != 'true'
+        working-directory: ${{ runner.temp }}
         run: |
           cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
           avm install ${{ env.ANCHOR_VERSION }}
           avm use ${{ env.ANCHOR_VERSION }}
+
+      - name: Activate pinned Rust toolchain (rust-toolchain.toml)
+        run: rustup show
+
+      - name: Cache cargo registry and build output
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Install Solana CLI (Agave)
+        if: steps.tool-cache.outputs.cache-hit != 'true'
+        run: sh -c "$(curl -sSfL https://release.anza.xyz/${{ env.SOLANA_VERSION }}/install)"
 
       - name: Add Solana CLI to PATH
         run: echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
