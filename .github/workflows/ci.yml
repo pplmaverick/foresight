@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  SOLANA_VERSION: stable
+  ANCHOR_VERSION: 1.1.2
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # rustup respects rust-toolchain.toml automatically; this just forces
+      # resolution/installation up front instead of on the first cargo call.
+      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        run: rustup show
+
+      - name: Cache cargo registry and build output
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      # Solana CLI and Anchor CLI (via avm) are cached separately from the Rust
+      # cache above since they're standalone binaries, not workspace build output.
+      # Bump the key suffix (e.g. -v2) to force a refresh of the "stable" Solana build.
+      - name: Cache Solana CLI and Anchor CLI
+        id: tool-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/solana/install
+            ~/.avm
+            ~/.cargo/bin/avm
+            ~/.cargo/bin/anchor
+          key: ${{ runner.os }}-solana-${{ env.SOLANA_VERSION }}-anchor-${{ env.ANCHOR_VERSION }}-v1
+
+      - name: Install system dependencies for avm/anchor-cli build
+        if: steps.tool-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config build-essential libudev-dev libssl-dev
+
+      - name: Install Solana CLI (Agave)
+        if: steps.tool-cache.outputs.cache-hit != 'true'
+        run: sh -c "$(curl -sSfL https://release.anza.xyz/${{ env.SOLANA_VERSION }}/install)"
+
+      - name: Install Anchor CLI via avm
+        if: steps.tool-cache.outputs.cache-hit != 'true'
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
+
+      - name: Add Solana CLI to PATH
+        run: echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+      - name: Verify toolchain versions
+        run: |
+          rustc --version
+          solana --version
+          anchor --version
+
+      - name: anchor build
+        run: anchor build
+
+      - name: cargo test
+        run: cargo test --workspace

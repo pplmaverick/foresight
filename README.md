@@ -1,5 +1,6 @@
 # Foresight
 
+![CI](https://github.com/pplmaverick/foresight/actions/workflows/ci.yml/badge.svg)
 ![Network](https://img.shields.io/badge/Solana-Devnet-9945FF)
 ![Rust](https://img.shields.io/badge/Rust-1.89-orange)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Next.js_14-3178C6)
