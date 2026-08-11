@@ -26,7 +26,7 @@ export function SiteHeader() {
               <Target className="h-4 w-4" aria-hidden="true" />
             </span>
             <span className="font-heading text-lg font-semibold tracking-tight">
-              Oracle Markets
+              Foresight
             </span>
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">

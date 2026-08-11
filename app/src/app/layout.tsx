@@ -20,7 +20,7 @@ const fontMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Oracle Markets — Onchain Prediction Markets",
+  title: "Foresight — Onchain Prediction Markets",
   description:
     "Trade outcomes on weather, sports, crypto, and stock markets, settled onchain on Solana.",
 };
