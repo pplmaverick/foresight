@@ -135,6 +135,18 @@ vercel --prod
 
 ---
 
+## Testing
+
+End-to-end integration tests are in [`programs/solana-prediction-market/tests/test_initialize.rs`](programs/solana-prediction-market/tests/test_initialize.rs) and use [litesvm](https://github.com/LiteSVM/litesvm) (in-process SVM — no local validator needed).
+
+The full flow is covered: `initialize → create_market → place_bet → resolve_market → claim_reward`, including time-window simulation via `set_sysvar::<Clock>`.
+
+```bash
+cargo test
+```
+
+---
+
 ## Program Interface
 
 ```rust
