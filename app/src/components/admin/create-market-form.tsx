@@ -160,7 +160,7 @@ export function CreateMarketForm({ onCreated }: { onCreated: () => void }) {
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" sideOffset={4}>
                 {CATEGORIES.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c}
