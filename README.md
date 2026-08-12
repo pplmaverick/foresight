@@ -1,21 +1,21 @@
 # Foresight
 
 ![CI](https://github.com/pplmaverick/foresight/actions/workflows/ci.yml/badge.svg)
-![Network](https://img.shields.io/badge/Solana-Devnet-9945FF)
+![Network](https://img.shields.io/badge/Solana-Mainnet-9945FF)
 ![Rust](https://img.shields.io/badge/Rust-1.89-orange)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Next.js_14-3178C6)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 Multi-category prediction market built natively for Solana — Weather, Sports, Crypto, and Stock markets, backed by a single Anchor program and PDA-derived accounts. Not a port from an EVM prediction-market template.
 
-**Deployed on Solana Devnet** (Mainnet deployment planned — see [Roadmap](#roadmap))
+**Deployed on Solana Mainnet**
 
 | Field | Value |
 |---|---|
-| Network | Solana Devnet |
+| Network | Solana Mainnet |
 | Program | Foresight (`solana_prediction_market`) |
 | Program ID | `8RcTb3UNNY5WzE5t4uFeoe3KndBiQhnjozMPxe9MtGGx` |
-| Explorer | [View Program](https://explorer.solana.com/address/8RcTb3UNNY5WzE5t4uFeoe3KndBiQhnjozMPxe9MtGGx?cluster=devnet) |
+| Explorer | [View Program](https://explorer.solana.com/address/8RcTb3UNNY5WzE5t4uFeoe3KndBiQhnjozMPxe9MtGGx) |
 | Frontend | [foresight-market.vercel.app](https://foresight-market.vercel.app) |
 
 ---
@@ -83,7 +83,7 @@ A dedicated `/admin` route wraps `initialize`, `create_market`, and `resolve_mar
 
 ## Deployed Program
 
-**Solana Devnet**
+**Solana Mainnet**
 
 | Program | Address |
 |---|---|
@@ -98,7 +98,7 @@ All state — `MarketAuthority`, `Market`, `Position`, and the SOL vault — liv
 **Prerequisites**
 - Rust 1.89 (see `rust-toolchain.toml`) + Solana CLI (Agave) + Anchor CLI 1.1.2
 - Node.js 18+
-- A funded wallet on Solana Devnet (`solana airdrop 2 --url devnet`)
+- A funded wallet on Solana Mainnet (real SOL — no faucet)
 
 ```bash
 # 1. Install program dependencies (from repo root)
@@ -107,8 +107,8 @@ anchor build
 # 2. Run the on-chain integration tests (litesvm — no local validator needed)
 cargo test
 
-# 3. Deploy to devnet
-anchor deploy --provider.cluster devnet
+# 3. Deploy to mainnet (upgrades the existing program; requires upgrade authority)
+anchor deploy --provider.cluster mainnet
 ```
 
 ```bash
@@ -122,7 +122,7 @@ cp .env.local.example .env.local
 
 | Variable | Description |
 |---|---|
-| `NEXT_PUBLIC_CLUSTER` | `devnet` (default), `testnet`, or `mainnet` / `mainnet-beta` |
+| `NEXT_PUBLIC_CLUSTER` | `mainnet` / `mainnet-beta` (default), or `devnet` / `testnet` for local development |
 | `NEXT_PUBLIC_RPC_ENDPOINT` | Optional RPC override — public cluster endpoints are rate-limited |
 
 ```bash
@@ -223,16 +223,18 @@ After the `position_index` migration, one pre-migration `Position` account (old,
 ## Roadmap
 
 **✅ M1 — Core Prediction Market (completed)**
-- `initialize`, `create_market`, `place_bet`, `resolve_market`, `claim_reward` implemented and exercised end-to-end on devnet
+- `initialize`, `create_market`, `place_bet`, `resolve_market`, `claim_reward` implemented and exercised end-to-end on mainnet
 
 **✅ M2 — Multi-Position Support (completed)**
 - `Position` PDA re-seeded with `market + user + position_index`, so a single wallet can hold multiple independent positions in the same market
 
-**⬜ M3 — Pyth Oracle Auto-Resolution**
-- Replace manual admin `resolve_market` calls with a Pyth pull-oracle price feed for objective, automatic settlement
+**✅ M3 — Mainnet + Colosseum Submission**
+- ✅ Mainnet deployment live — Program ID `8RcTb3UNNY5WzE5t4uFeoe3KndBiQhnjozMPxe9MtGGx`, verified with a full end-to-end mainnet test (`initialize → create_market → place_bet → resolve_market → claim_reward`)
+- ⬜ Security review
+- ⬜ Submission to the Colosseum hackathon
 
-**⬜ M4 — Mainnet + Colosseum Submission**
-- Security review, Mainnet deployment, submission to the Colosseum hackathon
+**⬜ M4 — Pyth Oracle Auto-Resolution**
+- Replace manual admin `resolve_market` calls with a Pyth pull-oracle price feed for objective, automatic settlement
 
 ---
 

@@ -9,8 +9,11 @@ skip-lint = false
 [programs.localnet]
 solana_prediction_market = "8RcTb3UNNY5WzE5t4uFeoe3KndBiQhnjozMPxe9MtGGx"
 
+[programs.mainnet]
+solana_prediction_market = "8RcTb3UNNY5WzE5t4uFeoe3KndBiQhnjozMPxe9MtGGx"
+
 [provider]
-cluster = "localnet"
+cluster = "mainnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
