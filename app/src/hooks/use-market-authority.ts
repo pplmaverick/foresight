@@ -27,23 +27,8 @@ export function useMarketAuthority() {
   }, [program]);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      try {
-        const [pda] = findMarketAuthorityPda();
-        const raw = await accountsOf(program).marketAuthority.fetch(pda);
-        if (!cancelled) setAuthority(mapMarketAuthority(pda, raw));
-      } catch {
-        if (!cancelled) setAuthority(null);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [program]);
+    refresh();
+  }, [refresh]);
 
   return { authority, loading, refresh };
 }
