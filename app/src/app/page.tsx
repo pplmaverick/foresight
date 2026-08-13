@@ -1,6 +1,19 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { MarketExplorer } from "@/components/markets/market-explorer";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 export default function HomePage() {
+  // Demo: simulates a 3s initial load so LoadingSkeleton is visible before
+  // MarketExplorer takes over with real data fetching.
+  const [showSkeletonDemo, setShowSkeletonDemo] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSkeletonDemo(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <div className="mb-8 space-y-2">
@@ -12,7 +25,7 @@ export default function HomePage() {
           onchain.
         </p>
       </div>
-      <MarketExplorer />
+      {showSkeletonDemo ? <LoadingSkeleton /> : <MarketExplorer />}
     </div>
   );
 }
